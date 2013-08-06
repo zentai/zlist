@@ -6,14 +6,14 @@ import os
 from task import Tasklist
 
 def setup_logging(default_level=logging.INFO, env_key='LOG_CFG'):
-    logging.getLogger(__name__).info("logging setup")
     logging.basicConfig(level=default_level)
     path = os.getenv(env_key, 'logging.yaml')
     if os.path.exists(path):
         with open(path, 'rt') as f:
             config = yaml.load(f.read())
             logging.config.dictConfig(config)
-
+    logging.getLogger(__name__).info("logging setup")
+    
 if __name__ == '__main__':
     cherrypy.config.update({
         # 'environment': 'production',
