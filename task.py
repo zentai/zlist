@@ -2,27 +2,18 @@ import datetime
 import cherrypy
 import logging
 import hashlib
-# mongo db lib
-from pymongo import Connection
-MONGODB_PORT = 19701
-username='walao81@gmail.com'
-password='qwertyuiop.81'
+from settings import db
+from pymongo import MongoClient
 
 class Tasklist:
     exposed = True
-    
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        connection = Connection('localhost', MONGODB_PORT)
-        self.db = connection.smallcase
-        self.db.authenticate("admin", "zhijian.81")
-        self.table = self.db.zlist
-        self.logger.info("Zlist init: Connection('%s', %s)" % ('localhost', MONGODB_PORT) )
+        client = MongoClient(db.get("MONGODB_IP"), db.get("MONGODB_PORT"))
+        client.admin.authenticate(db.get("USER"), db.get("PASS"))
+        self.table = client.zlist.tasklist
 
-    def GET(self, id=None):
-        if not id:
-            cursor = self.table.find()
-            return dict((record['_id'], record) for record in cursor)
-        else:
-            cursor = self.table.find({'tags': tag, 'active': True})
-            return dict((record['_id'], record) for record in cursor)
+    def GET(self):
+        self.logger = logging.getLogger(__name__)
+        cursor = self.table.find()
+        self.logger.info("[GET] Tasklist: %s items" % cursor.count())
+        return [ str(record) for record in cursor]
